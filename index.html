@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>関節の生活習慣チェック診断｜北国の恵み</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="googlebot" content="noindex, nofollow" />
+  <style>
+    /* ===== リセット・ベース ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green-dark: #085041;
+      --green-mid:  #1D9E75;
+      --green-light:#9FE1CB;
+      --green-pale: #E8F7F2;
+      --white:      #FFFFFF;
+      --gray-bg:    #F2F2F2;
+      --gray-text:  #6B7280;
+      --gray-line:  #E5E7EB;
+      --amber:      #BA7517;
+      --amber-bg:   #FEF3DC;
+      --orange:     #C94D1A;
+      --orange-bg:  #FEEDE5;
+      --red:        #B52B2B;
+      --red-bg:     #FEEBEB;
+      --line-green: #06C755;
+      --font: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+    }
+
+    html { font-family: var(--font); background: var(--gray-bg); color: #1a1a1a; }
+
+    /* ===== 全体レイアウト ===== */
+    .page-wrap {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ===== ヘッダー ===== */
+    .site-header {
+      background: var(--green-dark);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .site-header .logo-mark {
+      width: 32px; height: 32px;
+      background: var(--green-mid);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .site-header .brand { color: var(--white); font-size: 14px; font-weight: 600; letter-spacing: 0.02em; }
+    .site-header .sub   { color: var(--green-light); font-size: 11px; margin-top: 1px; }
+
+    /* ===== メインコンテンツ ===== */
+    main {
+      flex: 1;
+      max-width: 480px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 0 40px;
+    }
+
+    /* ===== ヒーローバナー ===== */
+    .hero {
+      background: linear-gradient(145deg, var(--green-dark) 0%, #0d7a5f 100%);
+      padding: 28px 24px 24px;
+      text-align: center;
+    }
+    .hero .eyebrow {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: var(--green-light);
+      background: rgba(255,255,255,0.1);
+      padding: 4px 12px;
+      border-radius: 99px;
+      margin-bottom: 14px;
+    }
+    .hero h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.55;
+      margin-bottom: 8px;
+    }
+    .hero p {
+      font-size: 12px;
+      color: var(--green-light);
+      line-height: 1.7;
+    }
+
+    /* ===== LINE風チャットUI ===== */
+    .chat-wrap {
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* 日付区切り */
+    .date-divider {
+      text-align: center;
+      font-size: 11px;
+      color: var(--gray-text);
+      position: relative;
+    }
+    .date-divider::before, .date-divider::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 28%;
+      height: 1px;
+      background: var(--gray-line);
+    }
+    .date-divider::before { left: 0; }
+    .date-divider::after  { right: 0; }
+
+    /* メッセージ行 */
+    .msg-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+    }
+    .msg-row.from-bot  { justify-content: flex-start; }
+    .msg-row.from-user { justify-content: flex-end; }
+
+    /* アバター */
+    .avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--green-mid);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    /* バブル */
+    .bubble {
+      max-width: 76%;
+      padding: 11px 14px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.65;
+      word-break: break-word;
+    }
+    .from-bot  .bubble { background: var(--white); border-bottom-left-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
+    .from-user .bubble { background: var(--line-green); color: var(--white); border-bottom-right-radius: 4px; }
+
+    /* タイムスタンプ */
+    .ts { font-size: 10px; color: var(--gray-text); padding-bottom: 2px; flex-shrink: 0; }
+    .from-user .ts { order: -1; }
+
+    /* ===== 選択ボタン（Q回答） ===== */
+    .btn-choices {
+      display: flex;
+      gap: 8px;
+      padding: 0 16px 0 60px;
+    }
+    .btn-choice {
+      flex: 1;
+      padding: 11px 0;
+      border-radius: 99px;
+      border: 1.5px solid var(--green-mid);
+      background: var(--white);
+      color: var(--green-mid);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, transform 0.1s;
+      font-family: var(--font);
+    }
+    .btn-choice:hover  { background: var(--green-pale); transform: translateY(-1px); }
+    .btn-choice:active { transform: translateY(0); }
+    .btn-choice.selected-yes { background: var(--green-mid); color: var(--white); border-color: var(--green-mid); }
+    .btn-choice.selected-no  { background: #E8EEF8; color: #3B5BA5; border-color: #3B5BA5; }
+    .btn-choice:disabled { opacity: 0.45; cursor: default; transform: none; }
+
+    /* ===== プログレスバー ===== */
+    .progress-wrap {
+      margin: 0 16px 0 60px;
+    }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--gray-text);
+      margin-bottom: 5px;
+    }
+    .progress-bar {
+      height: 3px;
+      background: var(--gray-line);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--green-mid);
+      border-radius: 99px;
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ===== タイピングインジケーター ===== */
+    .typing-row { display: flex; align-items: flex-end; gap: 8px; }
+    .typing-bubble {
+      background: var(--white);
+      border-radius: 18px;
+      border-bottom-left-radius: 4px;
+      padding: 14px 18px;
+      display: flex;
+      gap: 4px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+    }
+    .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #B0B8C8;
+      animation: bounce 1.2s infinite ease-in-out;
+    }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30%            { transform: translateY(-6px); }
+    }
+
+    /* ===== 結果カード ===== */
+    .result-wrap {
+      padding: 0 16px;
+      margin-top: 8px;
+    }
+    .result-card {
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .result-header {
+      padding: 20px 20px 16px;
+    }
+    .result-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 4px 12px;
+      border-radius: 99px;
+      margin-bottom: 12px;
+    }
+    .result-title {
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.4;
+      margin-bottom: 4px;
+    }
+    .result-sub {
+      font-size: 13px;
+      opacity: 0.7;
+    }
+    .result-body {
+      background: var(--white);
+      padding: 18px 20px;
+      font-size: 13.5px;
+      line-height: 1.8;
+      color: #2a2a2a;
+      border-top: 1px solid rgba(0,0,0,0.06);
+    }
+    .advice-box {
+      margin: 14px 0 0;
+      padding: 14px 16px;
+      background: #F7FAF9;
+      border-radius: 10px;
+      font-size: 13px;
+      color: #374151;
+      line-height: 1.75;
+      border-left: 3px solid var(--green-mid);
+    }
+    .advice-box strong { color: var(--green-dark); display: block; margin-bottom: 4px; font-size: 12px; }
+
+    /* CTAボタン */
+    .cta-section {
+      padding: 16px 20px 20px;
+      background: var(--white);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .cta-btn {
+      display: block;
+      width: 100%;
+      padding: 14px 20px;
+      border-radius: 10px;
+      border: none;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      font-family: var(--font);
+      transition: opacity 0.15s, transform 0.1s;
+      text-decoration: none;
+    }
+    .cta-btn:hover  { opacity: 0.88; transform: translateY(-1px); }
+    .cta-btn:active { transform: translateY(0); opacity: 1; }
+    .cta-primary { background: var(--green-mid); color: var(--white); }
+    .cta-retry   { background: #F3F4F6; color: #6B7280; font-weight: 500; font-size: 13px; }
+
+    /* ===== フロー解説セクション ===== */
+    .flow-section {
+      margin: 8px 16px 0;
+      background: var(--white);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .flow-header {
+      background: var(--green-dark);
+      padding: 14px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--white);
+    }
+    .flow-steps {
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .flow-step {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .flow-num {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: var(--green-mid);
+      color: var(--white);
+      font-size: 12px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .flow-text strong { font-size: 13px; color: var(--green-dark); display: block; margin-bottom: 2px; }
+    .flow-text span   { font-size: 12px; color: var(--gray-text); line-height: 1.6; }
+    .flow-connector { width: 1px; height: 10px; background: var(--gray-line); margin-left: 12px; }
+
+    /* ===== フッター ===== */
+    footer {
+      background: var(--green-dark);
+      text-align: center;
+      padding: 20px;
+      margin-top: 24px;
+      font-size: 11px;
+      color: var(--green-light);
+      line-height: 1.7;
+    }
+
+    /* ===== hidden ===== */
+    .hidden { display: none !important; }
+
+    /* ===== スクロール ===== */
+    html { scroll-behavior: smooth; }
+  </style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <!-- ヘッダー -->
+  <header class="site-header">
+    <div class="logo-mark">🌿</div>
+    <div>
+      <div class="brand">北国の恵み</div>
+      <div class="sub">関節の生活習慣チェック診断</div>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ヒーロー -->
+    <div class="hero">
+      <span class="eyebrow">LINE 診断</span>
+      <h1>毎日の習慣で<br>関節を傷めているかも？</h1>
+      <p>4つの質問に答えるだけで、あなたの関節タイプがわかります。<br>「はい」か「いいえ」で直感的に選んでください。</p>
+    </div>
+
+    <!-- フロー解説 -->
+    <div class="flow-section" id="flow-guide">
+      <div class="flow-header">📋 診断の流れ</div>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-num">1</div>
+          <div class="flow-text">
+            <strong>4問に回答する</strong>
+            <span>「はい」か「いいえ」で直感的に選択</span>
+          </div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-step">
+          <div class="flow-num">2</div>
+          <div class="flow-text">
+            <strong>スコア自動集計</strong>
+            <span>「はい」の数で4タイプに振り分け</span>
+          </div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-step">
+          <div class="flow-num">3</div>
+          <div class="flow-text">
+            <strong>あなたの関節タイプと対策がわかる</strong>
+            <span>タイプ別メッセージ＋北国の恵みへのご案内</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LINEチャット風UI -->
+    <div class="chat-wrap" id="chat">
+
+      <div class="date-divider">今日</div>
+
+      <!-- ウェルカムメッセージ -->
+      <div class="msg-row from-bot" id="msg-welcome">
+        <div class="avatar">🌿</div>
+        <div>
+          <div class="bubble">
+            こんにちは！<br>
+            <strong>関節の生活習慣チェック診断</strong>へようこそ🌿<br><br>
+            4つの質問に答えるだけで、あなたの関節タイプとおすすめのケア方法がわかります。<br><br>
+            さっそく始めましょう！
+          </div>
+        </div>
+        <div class="ts">12:00</div>
+      </div>
+
+      <!-- Q1 -->
+      <div id="q1-section" class="hidden">
+        <div class="msg-row from-bot" style="margin-bottom:10px;">
+          <div class="avatar">🌿</div>
+          <div>
+            <div class="bubble">
+              <strong>質問 1 / 4</strong><br><br>
+              1時間以上、同じ姿勢で座ったり立ったりすることが多いですか？<br><br>
+              <span style="font-size:12px;color:#6B7280;">例：デスクワーク・テレビ視聴・料理など</span>
+            </div>
+          </div>
+          <div class="ts">12:00</div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span>Q1 / 4</span><span>25%</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:25%"></div></div>
+        </div>
+        <div class="btn-choices" style="margin-top:10px;">
+          <button class="btn-choice" id="q1-yes" onclick="answer(1,'yes')">はい</button>
+          <button class="btn-choice" id="q1-no"  onclick="answer(1,'no')">いいえ</button>
+        </div>
+      </div>
+
+      <!-- Q2 -->
+      <div id="q2-section" class="hidden">
+        <div class="msg-row from-bot" style="margin-bottom:10px;">
+          <div class="avatar">🌿</div>
+          <div>
+            <div class="bubble">
+              <strong>質問 2 / 4</strong><br><br>
+              階段の上り下りや、しゃがむ動作で違和感・痛みを感じることがありますか？<br><br>
+              <span style="font-size:12px;color:#6B7280;">少しでも気になったことがある方は「はい」を選んでください</span>
+            </div>
+          </div>
+          <div class="ts">12:01</div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span>Q2 / 4</span><span>50%</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:50%"></div></div>
+        </div>
+        <div class="btn-choices" style="margin-top:10px;">
+          <button class="btn-choice" id="q2-yes" onclick="answer(2,'yes')">はい</button>
+          <button class="btn-choice" id="q2-no"  onclick="answer(2,'no')">いいえ</button>
+        </div>
+      </div>
+
+      <!-- Q3 -->
+      <div id="q3-section" class="hidden">
+        <div class="msg-row from-bot" style="margin-bottom:10px;">
+          <div class="avatar">🌿</div>
+          <div>
+            <div class="bubble">
+              <strong>質問 3 / 4</strong><br><br>
+              グルコサミンやコンドロイチンのサプリを試したが、あまり効果を感じられなかったことがありますか？<br><br>
+              <span style="font-size:12px;color:#6B7280;">試したことがない方は「いいえ」を選んでください</span>
+            </div>
+          </div>
+          <div class="ts">12:01</div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span>Q3 / 4</span><span>75%</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:75%"></div></div>
+        </div>
+        <div class="btn-choices" style="margin-top:10px;">
+          <button class="btn-choice" id="q3-yes" onclick="answer(3,'yes')">はい</button>
+          <button class="btn-choice" id="q3-no"  onclick="answer(3,'no')">いいえ</button>
+        </div>
+      </div>
+
+      <!-- Q4 -->
+      <div id="q4-section" class="hidden">
+        <div class="msg-row from-bot" style="margin-bottom:10px;">
+          <div class="avatar">🌿</div>
+          <div>
+            <div class="bubble">
+              <strong>質問 4 / 4</strong><br><br>
+              朝起きたとき、ひざや関節のこわばりを感じることがありますか？<br><br>
+              <span style="font-size:12px;color:#6B7280;">週に1回以上あてはまる方は「はい」を選んでください</span>
+            </div>
+          </div>
+          <div class="ts">12:02</div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span>Q4 / 4</span><span>100%</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+        </div>
+        <div class="btn-choices" style="margin-top:10px;">
+          <button class="btn-choice" id="q4-yes" onclick="answer(4,'yes')">はい</button>
+          <button class="btn-choice" id="q4-no"  onclick="answer(4,'no')">いいえ</button>
+        </div>
+      </div>
+
+      <!-- タイピング -->
+      <div class="typing-row hidden" id="typing">
+        <div class="avatar">🌿</div>
+        <div class="typing-bubble">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+      </div>
+
+      <!-- 結果エリア -->
+      <div id="result-area" class="hidden"></div>
+
+    </div><!-- /chat-wrap -->
+
+  </main>
+
+  <footer>
+    © 株式会社ウェルヴィーナス｜北国の恵み<br>
+    本診断は健康に関する一般的な情報提供を目的としており、医療診断ではありません。
+  </footer>
+
+</div><!-- /page-wrap -->
+
+<script>
+const LP_URL = 'https://cp.wellvenus.co.jp/knkgm_tk2490_api_api_pup_001';
+const answers = {};
+
+const RESULTS = {
+  1: {
+    emoji: '🟢',
+    badge: '関節ケア意識が高い！でも油断は禁物タイプ',
+    badgeBg: '#D1F2E8', badgeColor: '#085041',
+    title: '予防上手さん',
+    headerBg: '#E8F7F2', headerColor: '#085041',
+    sub: '今は比較的良い状態です。でも「今が守り時」です。',
+    body: 'あなたは日頃から関節への意識が高く、生活習慣の面では比較的ケアできています。ただし、年齢とともに軟骨は自然に減少していきます。今の状態をキープするためにも、内側からの栄養補給が長期的な鍵になります。',
+    advice: '今は問題なくても、軟骨はすでに30代から減り始めています。現状維持ではなく、今から"貯金"するイメージでケアを始めましょう。',
+    cta: '今の状態をずっとキープするための\n正しいケアを確認する →',
+    ctaBg: '#1D9E75'
+  },
+  2: {
+    emoji: '🟡',
+    badge: 'じわじわ関節にダメージが蓄積しているタイプ',
+    badgeBg: '#FEF3DC', badgeColor: '#7A4F0A',
+    title: 'ダメージ蓄積さん',
+    headerBg: '#FEF9EE', headerColor: '#7A4F0A',
+    sub: '自覚がなくても、毎日の習慣が関節を傷めています。',
+    body: '自覚はなくても、毎日の何気ない習慣がじわじわと関節にダメージを与えている可能性があります。長時間の座りっぱなし、階段の使い方、体重のかけ方…これらが積み重なると、軟骨への負担は想像以上です。',
+    advice: '「痛くないから大丈夫」は危険なサイン。軟骨には神経がないため、痛みを感じた時にはすでに摩耗が進んでいることがほとんどです。今が対策の絶好のタイミングです。',
+    cta: 'あなたのダメージレベルと\n今すぐできる対策を確認する →',
+    ctaBg: '#BA7517'
+  },
+  3: {
+    emoji: '🟠',
+    badge: '関節への負担が高く、今すぐ対策が必要なタイプ',
+    badgeBg: '#FEEDE5', badgeColor: '#7A2800',
+    title: '要注意！負担過多さん',
+    headerBg: '#FFF1EC', headerColor: '#7A2800',
+    sub: '複数の要因が重なっています。今すぐ対策を。',
+    body: '診断結果から、日常的に関節へ大きな負担がかかっていることがわかりました。このまま放置すると数年後に大きな支障が出るリスクがあります。グルコサミンを試して効果を感じられなかった方に多いのがこのタイプです。',
+    advice: '軟骨の"部品"を補うだけでは間に合わない段階に来ている可能性があります。II型コラーゲン・プロテオグリカンへのアプローチが今こそ必要です。',
+    cta: 'あなたの負担レベルに合わせた\n本当に必要なケアを確認する →',
+    ctaBg: '#C94D1A'
+  },
+  4: {
+    emoji: '🔴',
+    badge: '関節の限界サインが出ているかもしれないタイプ',
+    badgeBg: '#FEEBEB', badgeColor: '#7A1A1A',
+    title: '今すぐSOSサイン',
+    headerBg: '#FFF0F0', headerColor: '#7A1A1A',
+    sub: 'すでに関節が悲鳴を上げているサインが出ています。',
+    body: '階段がつらい、長時間歩くと痛む、朝のこわばりが気になる…これらは軟骨の摩耗が進んでいるサインかもしれません。今まで色々試してきたけど変わらない…という方は、アプローチ自体を見直す必要があります。',
+    advice: 'プロテオグリカンとII型コラーゲンを"壊さずそのまま"摂取するという新しい考え方が今注目されています。今すぐ「北国の恵み」で対策を始めましょう。',
+    cta: 'あなたの状態に合わせた\n緊急ケアプランを今すぐ確認する →',
+    ctaBg: '#B52B2B'
+  }
+};
+
+function getTime() {
+  const now = new Date();
+  return `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+}
+
+function answer(qNum, val) {
+  answers[qNum] = val;
+
+  // ボタン選択状態
+  const yes = document.getElementById(`q${qNum}-yes`);
+  const no  = document.getElementById(`q${qNum}-no`);
+  yes.classList.toggle('selected-yes', val === 'yes');
+  no.classList.toggle('selected-no',  val === 'no');
+  yes.disabled = true;
+  no.disabled  = true;
+
+  // ユーザー返答バブル表示
+  const chat = document.getElementById('chat');
+  const userRow = document.createElement('div');
+  userRow.className = 'msg-row from-user';
+  userRow.innerHTML = `
+    <div class="ts">${getTime()}</div>
+    <div class="bubble">${val === 'yes' ? 'はい' : 'いいえ'}</div>
+  `;
+  chat.appendChild(userRow);
+
+  // タイピング表示
+  const typing = document.getElementById('typing');
+  typing.classList.remove('hidden');
+  chat.appendChild(typing);
+  scrollBottom();
+
+  setTimeout(() => {
+    typing.classList.add('hidden');
+    if (qNum < 4) {
+      const next = document.getElementById(`q${qNum+1}-section`);
+      next.classList.remove('hidden');
+      chat.appendChild(next);
+      scrollBottom();
+    } else {
+      showResult();
+    }
+  }, 900);
+}
+
+function getType() {
+  const yes = Object.values(answers).filter(v => v === 'yes').length;
+  if (yes === 0) return 1;
+  if (yes === 1) return 2;
+  if (yes <= 3)  return 3;
+  return 4;
+}
+
+function showResult() {
+  const type = getType();
+  const r = RESULTS[type];
+  const area = document.getElementById('result-area');
+
+  // ボットの集計メッセージ
+  const chat = document.getElementById('chat');
+  const calcRow = document.createElement('div');
+  calcRow.className = 'msg-row from-bot';
+  calcRow.innerHTML = `
+    <div class="avatar">🌿</div>
+    <div><div class="bubble">診断が完了しました！<br>あなたの関節タイプを判定しています…✨</div></div>
+    <div class="ts">${getTime()}</div>
+  `;
+  chat.appendChild(calcRow);
+  scrollBottom();
+
+  setTimeout(() => {
+    area.classList.remove('hidden');
+    area.innerHTML = `
+      <div class="result-wrap">
+        <div class="result-card">
+          <div class="result-header" style="background:${r.headerBg};">
+            <span class="result-badge" style="background:${r.badgeBg};color:${r.badgeColor};">${r.emoji} ${r.badge}</span>
+            <div class="result-title" style="color:${r.headerColor};">${r.title}</div>
+            <div class="result-sub" style="color:${r.headerColor};">${r.sub}</div>
+          </div>
+          <div class="result-body">
+            ${r.body}
+            <div class="advice-box">
+              <strong>💡 あなたへのアドバイス</strong>
+              ${r.advice}
+            </div>
+          </div>
+          <div class="cta-section">
+            <a href="${LP_URL}" target="_blank" class="cta-btn cta-primary" style="background:${r.ctaBg};">${r.cta.replace(/\n/g,'<br>')}</a>
+            <button class="cta-btn cta-retry" onclick="retry()">もう一度診断する</button>
+          </div>
+        </div>
+      </div>
+    `;
+    scrollBottom();
+  }, 600);
+}
+
+function retry() {
+  Object.keys(answers).forEach(k => delete answers[k]);
+  // Q・結果リセット
+  for (let i = 1; i <= 4; i++) {
+    const sec = document.getElementById(`q${i}-section`);
+    sec.classList.add('hidden');
+    sec.querySelectorAll('.btn-choice').forEach(b => {
+      b.classList.remove('selected-yes','selected-no');
+      b.disabled = false;
+    });
+  }
+  document.getElementById('result-area').classList.add('hidden');
+  document.getElementById('result-area').innerHTML = '';
+  document.getElementById('typing').classList.add('hidden');
+
+  // ユーザー返答バブル・集計バブルを削除
+  document.querySelectorAll('.msg-row.from-user').forEach(el => el.remove());
+  document.querySelectorAll('.msg-row.from-bot:not(#msg-welcome)').forEach(el => {
+    if (!el.id) el.remove();
+  });
+
+  // Q1を再表示
+  const q1 = document.getElementById('q1-section');
+  q1.classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function scrollBottom() {
+  setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 50);
+}
+
+// ページロード後に少し遅延してQ1を表示
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    document.getElementById('q1-section').classList.remove('hidden');
+    scrollBottom();
+  }, 800);
+});
+</script>
+
+</body>
+</html>
