@@ -7,6 +7,56 @@
   <meta name="robots" content="noindex, nofollow" />
   <meta name="googlebot" content="noindex, nofollow" />
   <style>
+    /* ===== パスワード画面 ===== */
+    #pw-screen {
+      position: fixed;
+      inset: 0;
+      background: #085041;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .pw-box {
+      background: #fff;
+      border-radius: 16px;
+      padding: 36px 28px 32px;
+      width: 320px;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    }
+    .pw-logo  { font-size: 36px; margin-bottom: 12px; }
+    .pw-title { font-size: 16px; font-weight: 700; color: #085041; margin-bottom: 6px; font-family: 'Hiragino Kaku Gothic ProN','Hiragino Sans','Noto Sans JP',sans-serif; }
+    .pw-sub   { font-size: 12px; color: #6B7280; margin-bottom: 22px; font-family: 'Hiragino Kaku Gothic ProN','Hiragino Sans','Noto Sans JP',sans-serif; }
+    .pw-input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid #D1D5DB;
+      border-radius: 8px;
+      font-size: 15px;
+      outline: none;
+      margin-bottom: 10px;
+      font-family: 'Hiragino Kaku Gothic ProN','Hiragino Sans','Noto Sans JP',sans-serif;
+      transition: border-color 0.15s;
+    }
+    .pw-input:focus { border-color: #1D9E75; }
+    .pw-input.error { border-color: #B52B2B; }
+    .pw-btn {
+      width: 100%;
+      padding: 12px;
+      background: #1D9E75;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Hiragino Kaku Gothic ProN','Hiragino Sans','Noto Sans JP',sans-serif;
+      transition: opacity 0.15s;
+    }
+    .pw-btn:hover { opacity: 0.85; }
+    .pw-error { font-size: 12px; color: #B52B2B; margin-bottom: 10px; min-height: 18px; font-family: 'Hiragino Kaku Gothic ProN','Hiragino Sans','Noto Sans JP',sans-serif; }
+
     /* ===== リセット・ベース ===== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -371,6 +421,18 @@
   </style>
 </head>
 <body>
+
+<!-- パスワード画面 -->
+<div id="pw-screen">
+  <div class="pw-box">
+    <div class="pw-logo">🌿</div>
+    <div class="pw-title">アクセス制限</div>
+    <div class="pw-sub">パスワードを入力してください</div>
+    <input class="pw-input" type="password" id="pw-input" placeholder="パスワード" onkeydown="if(event.key==='Enter')checkPw()" />
+    <div class="pw-error" id="pw-error"></div>
+    <button class="pw-btn" onclick="checkPw()">確認する</button>
+  </div>
+</div>
 
 <div class="page-wrap">
 
@@ -758,6 +820,33 @@ window.addEventListener('DOMContentLoaded', () => {
     scrollBottom();
   }, 800);
 });
+
+// ===== パスワード認証 =====
+const CORRECT_PW = 'yabuta315';
+
+function checkPw() {
+  const input = document.getElementById('pw-input');
+  const error = document.getElementById('pw-error');
+  if (input.value === CORRECT_PW) {
+    document.getElementById('pw-screen').style.display = 'none';
+    sessionStorage.setItem('pw_ok', '1');
+  } else {
+    input.classList.add('error');
+    error.textContent = 'パスワードが違います。もう一度お試しください。';
+    input.value = '';
+    setTimeout(() => input.classList.remove('error'), 1000);
+  }
+}
+
+// セッション中は認証済みならスキップ
+window.addEventListener('DOMContentLoaded', () => {
+  if (sessionStorage.getItem('pw_ok') === '1') {
+    document.getElementById('pw-screen').style.display = 'none';
+  } else {
+    setTimeout(() => document.getElementById('pw-input').focus(), 100);
+  }
+});
+
 </script>
 
 </body>
